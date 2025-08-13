@@ -1,0 +1,38 @@
+from django.http import JsonResponse
+from language_tool_python import LanguageTool
+
+from notes.forms import CheckGrammarForm
+
+
+# Create your views here.
+def check_grammar(request):
+    try:
+        form = CheckGrammarForm(request.POST, request.FILES)
+        if form.is_valid():
+            content = form.cleaned_data['file'].read().decode('utf-8')
+            tool = LanguageTool("es-MX")
+            matches = tool.check(content)
+            tool.close()
+            json = {
+                "check": True,
+                "errors": []
+            }
+            if len(matches) > 0:
+                json["check"] = False
+                for match in matches:
+                    json["errors"].append({
+                        "rule_id": match.ruleId,
+                        "message": match.message,
+                        "offset": match.offset,
+                        "length": match.errorLength,
+                        "replacements": match.replacements,
+                        "context": match.context,
+                        "sentence": match.sentence,
+                    })
+            response = JsonResponse(json, safe=False)
+        else:
+            response = JsonResponse({'errors': form.errors}, status=400)
+    except Exception as e:
+        print(e)
+        response = JsonResponse({'message': 'Ocurrió un error al revisar la grámatica'}, status=500)
+    return response
