@@ -54,3 +54,16 @@ def save(request):
             "message": "Ocurrió un error al guardar la nota"
         }, status=500)
     return response
+
+
+def read(request):
+    try:
+        notes = Note.objects.all()
+        json = [note.serialize() for note in notes]
+        response = JsonResponse(json, safe=False)
+    except Exception as e:
+        print(e)
+        response = JsonResponse({
+            "message": "Ocurrió un error al listar las notas"
+        }, status=500)
+    return response
