@@ -7,6 +7,9 @@ from notes.models import Note
 
 
 # Create your views here.
+def error_response(message, status=500):
+    return HttpResponse(message, status=status, content_type="text/plain; charset=utf-8")
+
 def check_grammar(request):
     try:
         form = NoteForm(request.POST, request.FILES)
@@ -36,7 +39,7 @@ def check_grammar(request):
             response = JsonResponse({'errors': form.errors}, status=400)
     except Exception as e:
         print(e)
-        response = JsonResponse({'message': 'Ocurrió un error al revisar la grámatica'}, status=500)
+        response = error_response("Ocurrió un error al revisar la gramática")
     return response
 
 
@@ -51,9 +54,7 @@ def save(request):
             response = JsonResponse({'errors': form.errors}, status=400)
     except Exception as e:
         print(e)
-        response = JsonResponse({
-            "message": "Ocurrió un error al guardar la nota"
-        }, status=500)
+        response = error_response("Ocurrió un error al guardar la nota")
     return response
 
 
@@ -64,9 +65,7 @@ def read(request):
         response = JsonResponse(json, safe=False)
     except Exception as e:
         print(e)
-        response = JsonResponse({
-            "message": "Ocurrió un error al listar las notas"
-        }, status=500)
+        response = error_response("Ocurrió un error al listar las notas")
     return response
 
 
@@ -78,5 +77,5 @@ def parse(request, note_id):
         response = HttpResponse(html)
     except Exception as e:
         print(e)
-        response = HttpResponse("Ocurrió un error al parsear la nota", status=500, content_type="text/plain")
+        response = error_response("Ocurrió un error al parsear la nota")
     return response
