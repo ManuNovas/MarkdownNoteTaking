@@ -1,5 +1,6 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from language_tool_python import LanguageTool
+from markdown import markdown
 
 from notes.forms import NoteForm
 from notes.models import Note
@@ -66,4 +67,16 @@ def read(request):
         response = JsonResponse({
             "message": "Ocurrió un error al listar las notas"
         }, status=500)
+    return response
+
+
+def parse(request, note_id):
+    try:
+        note = Note.objects.get(id=note_id)
+        content = note.file.read().decode('utf-8')
+        html = markdown(content)
+        response = HttpResponse(html)
+    except Exception as e:
+        print(e)
+        response = HttpResponse("Ocurrió un error al parsear la nota", status=500, content_type="text/plain")
     return response

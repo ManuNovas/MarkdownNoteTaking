@@ -46,3 +46,14 @@ class ReadTests(TestCase):
         Note.objects.create(file=SimpleUploadedFile("test_4.md", b"# Este es un archivo de prueba"))
         response = self.client.get(reverse("notes:read"))
         self.assertEqual(response.status_code, 200)
+
+
+class ParseTests(TestCase):
+    def test_parse_success(self):
+        note = Note.objects.create(file=SimpleUploadedFile("test.md", b"# Este es un archivo de prueba"))
+        response = self.client.get(reverse("notes:parse", args=[note.id]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_parse_with_invalid_id(self):
+        response = self.client.get(reverse("notes:parse", args=[15898753847619768471]))
+        self.assertEqual(response.status_code, 500)
