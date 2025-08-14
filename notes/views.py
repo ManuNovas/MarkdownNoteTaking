@@ -1,13 +1,14 @@
 from django.http import JsonResponse
 from language_tool_python import LanguageTool
 
-from notes.forms import CheckGrammarForm
+from notes.forms import NoteForm
+from notes.models import Note
 
 
 # Create your views here.
 def check_grammar(request):
     try:
-        form = CheckGrammarForm(request.POST, request.FILES)
+        form = NoteForm(request.POST, request.FILES)
         if form.is_valid():
             content = form.cleaned_data['file'].read().decode('utf-8')
             tool = LanguageTool("es-MX")
@@ -35,4 +36,21 @@ def check_grammar(request):
     except Exception as e:
         print(e)
         response = JsonResponse({'message': 'Ocurrió un error al revisar la grámatica'}, status=500)
+    return response
+
+
+def save(request):
+    try:
+        form = NoteForm(request.POST, request.FILES)
+        if form.is_valid():
+            note = Note(file=form.files['file'])
+            note.save()
+            response = JsonResponse(note.serialize(), status=200)
+        else:
+            response = JsonResponse({'errors': form.errors}, status=400)
+    except Exception as e:
+        print(e)
+        response = JsonResponse({
+            "message": "Ocurrió un error al guardar la nota"
+        }, status=500)
     return response
